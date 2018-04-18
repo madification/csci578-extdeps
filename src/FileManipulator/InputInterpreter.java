@@ -1,40 +1,66 @@
 package FileManipulator;
 
+import Infrastructure.Sloth;
+
 import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class InputInterpreter {
 
+    public static ArrayList<Sloth> inputFiles = new ArrayList<>();
+    private static String skipDepends = "depends";
+    private static String lineRead;
+    private static String[] lineSegments;
 
 
-        public static InputInfo readInput(String fileName) {
-            InputInfo inputInfo = new InputInfo();
+        public static ArrayList<Sloth> readInput(String fileName) throws IOException {
+
 
             try {
-                BufferedReader reader = new BufferedReader(new FileReader(fileName));
+                File file = new File(fileName);
+                BufferedReader reader = new BufferedReader(new FileReader(file));
 
-                inputInfo.boardDimensions = Integer.parseInt(reader.readLine());
-                for (int row = 0; row < inputInfo.boardDimensions; row++) {
-                    String[] lineRead = reader.readLine().split("");
+                List<String> lines = reader.lines().collect(Collectors.toList());
 
-                    for (int column = 0; column < inputInfo.boardDimensions; column++) {
-                        if (lineRead[column].equals("*")) {
-                            // Cell was empty; increment count and convert to usable -1
-                            inputInfo.emptyCells++;
+                lines.size();
+                // process deps.rsf file line by line
+                for(int lineNum = 0; lineNum < lines.size(); lineNum++) {
+                    // read full line
+//                    lineRead = reader.readLine();
+                    // extract segments by space
+                    lineSegments = lines.get(lineNum).split(" ");
 
-                        }
-                        else {
-                            System.out.println("placeholder");
-                        }
+                    // pull out 'depends ' and discard.
+                    if (!lineSegments[0].equals(skipDepends)) {
+                        throw new IOException("First 8 characters were not 'depends '");
                     }
+
+
+                    // go through the line segments we just extracted and identify the internal deps
+                    // start by pulling the first file as the base, the following are what it depends upon
+                    // start at index 1 because we don't want 'depends '
+                    ArrayList<Sloth> currList = new ArrayList<>();
+                    Sloth currFile = new Sloth(lineSegments[1], currList);
+                    for (int curr = 2; curr < lineSegments.length ; curr++) {
+                        //TODO identify if nextFile has already been found and thus has a populated intDepsList
+                        Sloth nextFile = new Sloth(lineSegments[curr], null);
+                        currList.add(nextFile);
+                    }
+
+                    inputFiles.add(currFile);
+
                 }
-
-
                 reader.close();
-            } catch (IOException e) {
+            }
+            //TODO figure out how the exception thrown in if above could affect this
+            catch (IOException e) {
                 System.out.println(e.toString() + "Could not find input.txt file.");
             }
 
-            return inputInfo;
+            return inputFiles;
+
         }
 
         public static double[] readCalibration(String fileName) {
