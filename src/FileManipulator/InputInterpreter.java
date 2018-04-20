@@ -1,21 +1,20 @@
 package FileManipulator;
 
-import Infrastructure.Sloth;
-
 import java.io.*;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class InputInterpreter {
 
-    public static ArrayList<Sloth> inputFiles = new ArrayList<>();
+    public static InputInfo inputFiles = new InputInfo();
     private static String skipDepends = "depends";
     private static String lineRead;
     private static String[] lineSegments;
+    public static HashMap<String, Set<String>> intDepsMap = new HashMap<>();
+    public static HashMap<String, Set<String>> extDepsMap = new HashMap<>();
 
 
-        public static ArrayList<Sloth> readInput(String fileName) throws IOException {
+        public static InputInfo readInput(String fileName) throws IOException {
 
 
             try {
@@ -37,26 +36,26 @@ public class InputInterpreter {
                         throw new IOException("First 8 characters were not 'depends '");
                     }
 
-
                     // go through the line segments we just extracted and identify the internal deps
                     // start by pulling the first file as the base, the following are what it depends upon
-                    // start at index 1 because we don't want 'depends '
-                    ArrayList<Sloth> currList = new ArrayList<>();
-                    Sloth currFile = new Sloth(lineSegments[1], currList);
-                    for (int curr = 2; curr < lineSegments.length ; curr++) {
-                        //TODO identify if nextFile has already been found and thus has a populated intDepsList
-                        Sloth nextFile = new Sloth(lineSegments[curr], null);
-                        currList.add(nextFile);
-                    }
+                    // the key is the base, the set is the base's dependencies
+                    // start at index 1 because we don't want 'depends' prefix from the input file
+                    intDepsMap.computeIfAbsent(lineSegments[1], o->new HashSet<String>()).add(lineSegments[2]);
 
-                    inputFiles.add(currFile);
+                    // Now do the same to get the external dependencies
+                    // the second file listed is utilized by the first; the second is depended upon by the first
+                    // the key is the file being utilized, the set is the list of files utilizing/importing the key
+                    extDepsMap.computeIfAbsent(lineSegments[2], o->new HashSet<String>()).add(lineSegments[1]);
+
+                    inputFiles.extDepsMap = extDepsMap;
+                    inputFiles.intDepsMap = intDepsMap;
 
                 }
                 reader.close();
             }
             //TODO figure out how the exception thrown in if above could affect this
             catch (IOException e) {
-                System.out.println(e.toString() + "Could not find input.txt file.");
+                System.out.println(e.toString() );
             }
 
             return inputFiles;

@@ -1,8 +1,8 @@
+import FileManipulator.InputInfo;
 import FileManipulator.InputInterpreter;
-import Infrastructure.Sloth;
+import FileManipulator.OutputInterpreter;
 
 import java.io.IOException;
-import java.util.ArrayList;
 
 public class Main {
 
@@ -15,8 +15,16 @@ public class Main {
         // inputfile must be passed in as first argument
         String inputFile = args[0];
         try {
-            ArrayList<Sloth> fileList = InputInterpreter.readInput(inputFile);
-            fileList.stream().map(Sloth::getFileName).forEach(System.out::println);
+            InputInfo fileLists = InputInterpreter.readInput(inputFile);
+            fileLists.setInputFilePath(args[0]);
+//            fileLists.extDepsMap.forEach((k, s)-> {
+//                System.out.println("\n" + "key: " + k);
+//                s.stream().forEach(ss->System.out.println("      val: " + ss));
+//            });
+
+            OutputInterpreter out = new OutputInterpreter(fileLists);
+            out.generateTxt("output.txt");
+
         } catch (IOException e) {
             System.out.println(e.getMessage());
 
