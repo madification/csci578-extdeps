@@ -58,6 +58,8 @@ public class InputInterpreter {
                 System.out.println(e.toString() );
             }
 
+            inputFiles.populateSlothList();
+
             return inputFiles;
 
         }

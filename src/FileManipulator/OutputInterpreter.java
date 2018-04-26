@@ -18,11 +18,11 @@ public class OutputInterpreter {
 
             this.inputInfo.extDepsMap.forEach((k, s) -> {
                 try {
-                    writer.write("\n" + "key: " + k);
-                    writer.newLine();
+                    writer.write("\n" + k + "\n" + "    is used by:" + "\n");
+//                    writer.newLine();
                     s.stream().forEach(ss -> {
                         try {
-                            writer.write("      val: " + ss);
+                            writer.write("       " + ss);
                             writer.newLine();
                         } catch (IOException e) {
                             System.out.println(e.toString() + "Error in creation of calibration file.");

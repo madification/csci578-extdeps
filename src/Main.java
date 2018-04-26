@@ -17,13 +17,9 @@ public class Main {
         try {
             InputInfo fileLists = InputInterpreter.readInput(inputFile);
             fileLists.setInputFilePath(args[0]);
-//            fileLists.extDepsMap.forEach((k, s)-> {
-//                System.out.println("\n" + "key: " + k);
-//                s.stream().forEach(ss->System.out.println("      val: " + ss));
-//            });
 
             OutputInterpreter out = new OutputInterpreter(fileLists);
-            out.generateTxt("output.txt");
+            out.generateTxt("output.txt"); //TODO figure out how to use the file path in inputInfo to select the location to save output
 
         } catch (IOException e) {
             System.out.println(e.getMessage());
