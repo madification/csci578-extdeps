@@ -25,8 +25,13 @@ public class Sloth {
     public static Sloth createSloth(String fileName, Set<String> intDepsSet, Set<String> extDepsSet){
         ArrayList<String> intDList = new ArrayList<>();
         ArrayList<String> extDList = new ArrayList<>();
-        intDepsSet.forEach(s -> intDList.add(s));
-        extDepsSet.forEach(s -> extDList.add(s));
+        if (intDepsSet != null && !intDepsSet.isEmpty()){
+            intDepsSet.forEach(s -> intDList.add(s));
+        }
+        if (extDepsSet != null && !extDepsSet.isEmpty()){
+            extDepsSet.forEach(s -> extDList.add(s));
+        }
+
         Sloth newSloth = new Sloth(fileName, intDList);
         newSloth.setExtDepsList(extDList);
         return newSloth;
