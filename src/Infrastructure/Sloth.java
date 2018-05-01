@@ -28,9 +28,11 @@ public class Sloth {
         if (intDepsSet != null && !intDepsSet.isEmpty()){
             intDepsSet.forEach(s -> intDList.add(s));
         }
+        else System.out.println(fileName + " does not use any other files");
         if (extDepsSet != null && !extDepsSet.isEmpty()){
             extDepsSet.forEach(s -> extDList.add(s));
         }
+        else System.out.println(fileName + " is not used by any other file.");
 
         Sloth newSloth = new Sloth(fileName, intDList);
         newSloth.setExtDepsList(extDList);
