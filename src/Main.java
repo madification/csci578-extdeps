@@ -1,8 +1,8 @@
 import FileManipulator.InputInfo;
 import FileManipulator.InputInterpreter;
 import FileManipulator.OutputInterpreter;
+import GUI.GraphicVisualizer;
 import Infrastructure.Sloth;
-import com.sun.prism.paint.Color;
 import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -11,7 +11,9 @@ import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Button;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.StackPane;
+import javafx.scene.shape.Circle;
 import javafx.stage.Stage;
 
 import java.io.IOException;
@@ -53,26 +55,18 @@ public class Main extends Application implements EventHandler<ActionEvent>{
 
     @Override
     public void start(Stage primaryStage) throws Exception {
+        int height = 500;
+        int width = 500;
+
+        GraphicVisualizer gv = new GraphicVisualizer(height, width);
+        gv.drawingSettings();
         primaryStage.setTitle("External Dependency Tool");
 
-        Group root = new Group();
-        Canvas canvas = new Canvas(500, 500);
-        GraphicsContext gC = canvas.getGraphicsContext2D();
-        gC.setStroke(javafx.scene.paint.Color.BLACK);
-        gC.strokeOval(100, 400, 30, 30);
-        root.getChildren().add(canvas);
+//TODO Create circle for each sloth, map sloth to object (object = key, sloth = stored val)
+        HashMap<Circle, Sloth> circle2SlothMap = new HashMap<>();
 
 
-        //TODO Create circle for each sloth, map sloth to object (object = key, sloth = stored val)
-        HashMap<Object, Sloth> obj2SlothMap = new HashMap<>();
-
-        Button button = new Button("issa button");
-        button.setOnAction(this); //TODO if move gui stuff to another class, replace 'this' with the name of the class::handle
-        StackPane layout = new StackPane();
-
-        layout.getChildren().add(button);
-
-        Scene scene = new Scene(root, 500, 500);
+        Scene scene = new Scene(gv.root, width, height);
 //        Scene scene = new Scene(layout, 500, 500);
         primaryStage.setScene(scene);
 
