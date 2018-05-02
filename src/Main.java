@@ -2,38 +2,41 @@ import FileManipulator.InputInfo;
 import FileManipulator.InputInterpreter;
 import FileManipulator.OutputInterpreter;
 import GUI.GraphicVisualizer;
+import Infrastructure.ImpactHandler;
 import Infrastructure.Sloth;
 import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
-import javafx.scene.Group;
 import javafx.scene.Scene;
-import javafx.scene.canvas.Canvas;
-import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.control.Button;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.StackPane;
+import javafx.scene.shape.ArcType;
 import javafx.scene.shape.Circle;
 import javafx.stage.Stage;
 
 import java.io.IOException;
 import java.util.HashMap;
 
-public class Main extends Application implements EventHandler<ActionEvent>{
+public class Main extends Application implements EventHandler<ActionEvent> {
+
+    private static InputInfo fileData;
 
     /**
-     *
-     *
      * @param args
      */
     public static void main(String args[]) {
         // inputfile must be passed in as first argument
         String inputFile = args[0];
         try {
-            InputInfo fileLists = InputInterpreter.readInput(inputFile);
-            fileLists.setInputFilePath(args[0]);
+            fileData = InputInterpreter.readInput(inputFile);
+            fileData.setInputFilePath(args[0]);
+            ImpactHandler impactHandler = new ImpactHandler(fileData);
 
-            OutputInterpreter out = new OutputInterpreter(fileLists);
+            fileData.allSloths.forEach((fileName, sloth) -> {
+                sloth.setImpactScore(impactHandler.calCascadingExtDeps(sloth), fileData.allSloths.size());
+//                sloth.setCascadeLevels(impactHandler.calcExtDepsLevels(sloth));
+            });
+
+            OutputInterpreter out = new OutputInterpreter(fileData);
             out.generateTxt("output.txt"); //TODO figure out how to use the file path in inputInfo to select the location to save output
 
         } catch (IOException e) {
@@ -63,8 +66,26 @@ public class Main extends Application implements EventHandler<ActionEvent>{
         primaryStage.setTitle("External Dependency Tool");
 
 //TODO Create circle for each sloth, map sloth to object (object = key, sloth = stored val)
-        HashMap<Circle, Sloth> circle2SlothMap = new HashMap<>();
+        HashMap<Circle, Sloth> circle2SlothMap = gv.getCircles(fileData.allSloths);
+        StackPane layout = new StackPane();
 
+        circle2SlothMap.forEach((circle, sloth) ->
+        {
+            layout.getChildren().add(circle);
+
+//            double dx = Math.random()*(height-circle.getRadius());
+//            double dy = Math.random()*(width-circle.getRadius());
+//            gv.gc.strokeOval(circle.getCenterX()+dx,
+//                    circle.getCenterY()+dy,
+//                    circle.getRadius(),
+//                    circle.getRadius());
+//            gv.gc.fillText(sloth.getFileName(),
+//                    circle.getCenterX()+dx,
+//                    circle.getCenterY()+dy,
+//                    15);
+        });
+
+        gv.root.getChildren().addAll(gv.canvas, layout);
 
         Scene scene = new Scene(gv.root, width, height);
 //        Scene scene = new Scene(layout, 500, 500);

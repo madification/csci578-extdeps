@@ -13,10 +13,17 @@ public class Sloth {
     public ArrayList<String> intDepsList = new ArrayList<>();
     // level of potential impact change to this file could have
     public int impactScore = 0;
+    public int cascadeLevels = 0;
     public boolean impactCalculated = false;
+    public boolean levelsCalculated = false;
     //number of external dependencies
     public int usageScore = 0;
 
+    /**
+     * Constructor
+     * @param fileName string name of the file
+     * @param intDepsList list of dependencies: files used by the file
+     */
     public Sloth(String fileName, ArrayList<String> intDepsList){
         this.fileName = fileName;
         this.intDepsList = intDepsList;
@@ -39,19 +46,31 @@ public class Sloth {
         return newSloth;
     }
 
+
     public void setExtDepsList(ArrayList<String> extDepsList) {
         this.extDepsList = extDepsList;
         this.calculateUsageScore();
     }
 
     public boolean isImpactCalculated() {
-        return impactCalculated;
+        if(levelsCalculated && impactCalculated){
+            return true;
+        }
+        else return false;
     }
 
-    public void setImpactScore(int score) {
-        this.impactScore = score;
+    public void setImpactScore(int totalUsage, int numSystemFiles) {
+        // score = percentage of files in the whole system which use "this"
+        this.impactScore = 100*(totalUsage/numSystemFiles);
         impactIsCalculated();
     }
+
+    public void setCascadeLevels(int levels){
+        this.cascadeLevels = levels;
+        levelsAreCalculated();
+    }
+
+    private void levelsAreCalculated() {this.levelsCalculated = true;}
 
     private void impactIsCalculated(){
         this.impactCalculated = true;

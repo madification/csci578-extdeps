@@ -11,6 +11,12 @@ public class ImpactHandler {
         this.inputInfo = inputInfo;
     }
 
+    /**
+     * Calculate the total number of usages as cascaded through system
+     * Example:  a is used by b and c and b is used by d and c is used by e, f, g means a has 6 total cascadingExtDeps
+     * @param ogSloth sloth to calculate cascadingExtDeps on
+     * @return total cascadingExtDeps
+     */
     public int calCascadingExtDeps(Sloth ogSloth) {
 //        Set<String> toAdd = new HashSet<>();
         ArrayList<Sloth> xDSlothList = new ArrayList<>();
@@ -33,7 +39,10 @@ public class ImpactHandler {
             //for each sloth of the extdepslist, add the usage score to the total
             for (int s = 0; s < xDSlothList.size(); s++){
                 Sloth nextSloth = xDSlothList.get(s);
-                total += nextSloth.usageScore;
+                if (nextSloth == null){
+                    System.out.println("shit");
+                }
+                else                 total += nextSloth.usageScore;
 
                 // add the extDeps of this sloth we just retrieved (this sloth was an extDep itself)
                 // We can't have duplicates in this list or we'll get infinite loops
@@ -50,6 +59,12 @@ public class ImpactHandler {
         return total;
     }
 
+    /**
+     * Calculate the levels of cascading extDeps
+     * Example:  a is used by b and c and b is used by d and c is used by e, f, g means a has 2 levels of extDepsLevels
+     * @param ogSloth
+     * @return
+     */
     public int calcExtDepsLevels (Sloth ogSloth){
         int levels = 0;
         ArrayList<String> levelNames = new ArrayList<>();

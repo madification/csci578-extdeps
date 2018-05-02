@@ -26,6 +26,9 @@ public class InputInfo {
                 Sloth sloth = Sloth.createSloth(key, intDepsMap.get(key), set);
                 allSloths.put(key, sloth);
             });
+            this.intDepsMap.forEach((key, set) -> {
+                allSloths.computeIfAbsent(key, o-> allSloths.put(key, Sloth.createSloth(key, set, extDepsMap.get(key))));
+            } );
 //            allSloths.computeIfAbsent(this.intDepsMap.forEach((k, s) -> allSloths.put(k, Sloth.createSloth(k, this.intDepsMap.get(k), null))) );
         } //TODO should add a computeIfAbsent on the intDepsList to make sure, if any files are not used by another, they still make it into this list
     }
