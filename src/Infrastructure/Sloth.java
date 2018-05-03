@@ -13,11 +13,13 @@ public class Sloth {
     public ArrayList<String> intDepsList = new ArrayList<>();
     // level of potential impact change to this file could have
     public int impactScore = 0;
+    private int spaghettiScore = 0;
+    public int uniqueUsages = 0;
     public int cascadeLevels = 0;
     public boolean impactCalculated = false;
     public boolean levelsCalculated = false;
     //number of external dependencies
-    public int usageScore = 0;
+    public int totalUsages = 0;
 
     /**
      * Constructor
@@ -29,15 +31,25 @@ public class Sloth {
         this.intDepsList = intDepsList;
     }
 
+
+    public void setUniqueUsages(int uniqueUsages) {
+        this.uniqueUsages = uniqueUsages;
+    }
+
+    public void setTotalUsages(int totalUsages) {
+        this.totalUsages = totalUsages;
+    }
+
+
     public static Sloth createSloth(String fileName, Set<String> intDepsSet, Set<String> extDepsSet){
         ArrayList<String> intDList = new ArrayList<>();
         ArrayList<String> extDList = new ArrayList<>();
         if (intDepsSet != null && !intDepsSet.isEmpty()){
-            intDepsSet.forEach(s -> intDList.add(s));
+            intDList.addAll(intDepsSet);
         }
         else System.out.println(fileName + " does not use any other files");
         if (extDepsSet != null && !extDepsSet.isEmpty()){
-            extDepsSet.forEach(s -> extDList.add(s));
+            extDList.addAll(extDepsSet);
         }
         else System.out.println(fileName + " is not used by any other file.");
 
@@ -52,6 +64,10 @@ public class Sloth {
         this.calculateUsageScore();
     }
 
+    private void calculateUsageScore(){
+        this.totalUsages = extDepsList.size();
+    }
+
     public boolean isImpactCalculated() {
         if(levelsCalculated && impactCalculated){
             return true;
@@ -59,11 +75,13 @@ public class Sloth {
         else return false;
     }
 
-    public void setImpactScore(int totalUsage, int numSystemFiles) {
+    public void setScores(int maxUsagesInSystem) {
         // score = percentage of files in the whole system which use "this"
-        this.impactScore = 100*(totalUsage/numSystemFiles);
+        this.impactScore = maxUsagesInSystem == 0 ? 0 : 100*(this.totalUsages/maxUsagesInSystem);
+        this.spaghettiScore = this.totalUsages == 0 ? 0 : uniqueUsages/totalUsages;
         impactIsCalculated();
     }
+
 
     public void setCascadeLevels(int levels){
         this.cascadeLevels = levels;
@@ -76,11 +94,8 @@ public class Sloth {
         this.impactCalculated = true;
     }
 
-    private void calculateUsageScore(){
-        this.usageScore = extDepsList.size();
-    }
-
     public String getFileName() {
         return fileName;
     }
+
 }

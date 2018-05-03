@@ -1,7 +1,6 @@
 package GUI;
 
 import Infrastructure.Sloth;
-import com.sun.deploy.uitoolkit.DragContext;
 import javafx.event.EventHandler;
 import javafx.scene.Group;
 import javafx.scene.canvas.Canvas;
@@ -9,7 +8,6 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.shape.Circle;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 
 public class GraphicVisualizer {
@@ -38,7 +36,7 @@ public class GraphicVisualizer {
 
     public void drawingSettings(){
         this.gc.setStroke(javafx.scene.paint.Color.BLACK);
-        this.gc.strokeOval(100, 400, 30, 30);
+//        this.gc.strokeOval(100, 400, 30, 30);
         canvas.setOnMouseClicked((MouseEvent e) -> System.out.println("clicked"));
 
     }
@@ -48,7 +46,7 @@ public class GraphicVisualizer {
 
         slothMap.forEach((fileName, sloth) -> {
             //create circle
-            Circle circle = new Circle(sloth.usageScore);
+            Circle circle = new Circle(sloth.totalUsages);
             circle.addEventFilter(MouseEvent.MOUSE_CLICKED, onMouseClickedEventHandler);
             circle.relocate(sloth.impactScore, sloth.impactScore); //TODO put in proper coordinates; impactProbability and cascadeLevels?
             circle2SlothMap.put(circle, sloth);

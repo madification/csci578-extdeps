@@ -9,9 +9,9 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.scene.layout.StackPane;
-import javafx.scene.shape.ArcType;
 import javafx.scene.shape.Circle;
 import javafx.stage.Stage;
+import javafx.util.Pair;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -19,6 +19,7 @@ import java.util.HashMap;
 public class Main extends Application implements EventHandler<ActionEvent> {
 
     private static InputInfo fileData;
+    private static int maxUsedFileTotal = 0;
 
     /**
      * @param args
@@ -30,11 +31,17 @@ public class Main extends Application implements EventHandler<ActionEvent> {
             fileData = InputInterpreter.readInput(inputFile);
             fileData.setInputFilePath(args[0]);
             ImpactHandler impactHandler = new ImpactHandler(fileData);
+            maxUsedFileTotal = impactHandler.findMaxUsedFileTotal();
 
             fileData.allSloths.forEach((fileName, sloth) -> {
-                sloth.setImpactScore(impactHandler.calCascadingExtDeps(sloth), fileData.allSloths.size());
-//                sloth.setCascadeLevels(impactHandler.calcExtDepsLevels(sloth));
+                Pair<Integer, Integer> p = impactHandler.calCascadingExtDeps(sloth);
+                sloth.setTotalUsages(p.getKey());
+                sloth.setUniqueUsages(p.getValue());
+                sloth.setScores(maxUsedFileTotal);
+// TODO                sloth.setCascadeLevels(impactHandler.calcExtDepsLevels(sloth));
             });
+
+
 
             OutputInterpreter out = new OutputInterpreter(fileData);
             out.generateTxt("output.txt"); //TODO figure out how to use the file path in inputInfo to select the location to save output
