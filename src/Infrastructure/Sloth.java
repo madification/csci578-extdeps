@@ -12,17 +12,17 @@ public class Sloth {
     // files which this file uses/imports/depends upon
     public ArrayList<String> intDepsList = new ArrayList<>();
     // level of potential impact change to this file could have
-    public int impactScore = 0;
-    private int spaghettiScore = 0;
-    public int usageRatio = 0;
-    public int uniqueUsages = 0;
-    public int cascadeLevel = 0;
+    public float impactScore = 0;
+    public float spaghettiScore = 0;
+    public float usageRatio = 0;
+    public float uniqueUsages = 0;
+    public float totalUsages = 0;
+    public float immediateUsages = 0;
+    public float cascadeLevel = 0; // no longer used
     private boolean uniqueSet = false;
     private boolean totalSet = false;
     public boolean impactCalculated = false;
     public boolean levelCalculated = false;
-    public int totalUsages = 0;
-    public int immediateUsages = 0;
 
     /**
      * Constructor
@@ -34,13 +34,14 @@ public class Sloth {
         this.intDepsList = intDepsList;
     }
 
-
-    public void setUniqueUsages(int uniqueUsages) {
+    // Unique usages are cascading usages but w/o repeats. Duplicates on different branches will not come through.
+    public void setUniqueUsages(float uniqueUsages) {
         this.uniqueUsages = uniqueUsages;
         uniqueSet = true;
     }
 
-    public void setTotalUsages(int totalUsages) {
+    // Total usages counts every node in the tree
+    public void setTotalUsages(float totalUsages) {
         this.totalUsages = totalUsages;
         totalSet = true;
     }
@@ -63,31 +64,43 @@ public class Sloth {
         return newSloth;
     }
 
-
+    // This is a list of files which directly use the file of interest. They are immediate usages.
     public void setExtDepsList(ArrayList<String> extDepsList) {
         this.extDepsList = extDepsList;
         this.setImmediateUsages();
     }
 
+    // Immediate usages are like immediate relatives. These files directly import the file of interest
     private void setImmediateUsages() {
         this.immediateUsages = this.extDepsList.size();
     }
 
-    public void setScores(int maxUsagesInSystem, int numFilesInSystem) {
+
+    /**
+     * setScores calculates the information used to determine the potential impact a change to the file
+     * of interest could have on the system.
+     *
+     * @param maxUsagesInSystem The largest 'totalUsage' value of all sloths/files
+     * @param numFilesInSystem The total number of unique files in the system
+     */
+    public void setScores(float maxUsagesInSystem, float numFilesInSystem) {
         if(dataAcquired()) {
             // ratio of number of usages of "this" vs the most used file in the system
             this.usageRatio = maxUsagesInSystem == 0 ? 0 : 100 * (this.totalUsages / maxUsagesInSystem);
-            this.spaghettiScore = this.totalUsages == 0 ? 0 : this.uniqueUsages / this.totalUsages;
+            // Spaghetti score is the ratio of how many uniqueUsages vs totalUsages.
+            // This shows "you have this many unique files, but this many total usages"
+            // aka how many connections between each of the unique files thus making a giant spaghetti diagram!
+            this.spaghettiScore = this.totalUsages == 0 ? 0 : 100*(this.uniqueUsages / this.totalUsages);
             // score percentage of unique files in the system which use "this"
-            this.impactScore = this.uniqueUsages / numFilesInSystem;
+            this.impactScore = 100 * (this.uniqueUsages / numFilesInSystem);
 
-            // We've now calculated the impact
+            // We've now calculated the potential impact a change to 'this' could have on the system
             this.impactCalculated = true;
         }
     }
 
 
-    public void setCascadeLevel(int level){
+    public void setCascadeLevel(float level){
         this.cascadeLevel = level;
         this.levelCalculated = true;
     }
