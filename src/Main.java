@@ -14,12 +14,18 @@ import javafx.stage.Stage;
 import javafx.util.Pair;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.stream.IntStream;
+
+import static java.util.Collections.emptyList;
 
 public class Main extends Application implements EventHandler<ActionEvent> {
 
     private static InputInfo fileData;
-    private static int maxUsedFileTotal = 0;
+    private static int numFilesInSystem = 0;
 
     /**
      * @param args
@@ -30,17 +36,36 @@ public class Main extends Application implements EventHandler<ActionEvent> {
         try {
             fileData = InputInterpreter.readInput(inputFile);
             fileData.setInputFilePath(args[0]);
+            numFilesInSystem = fileData.allSloths.size();
             ImpactHandler impactHandler = new ImpactHandler(fileData);
-            maxUsedFileTotal = impactHandler.findMaxUsedFileTotal();
+            impactHandler.findMaxUsedFileTotal();
 
-            fileData.allSloths.forEach((fileName, sloth) -> {
+//            fileData.allSloths.forEach((fileName, sloth) -> {
+//                Pair<Integer, Integer> p = impactHandler.calCascadingExtDeps(sloth);
+//                sloth.setTotalUsages(p.getKey());
+//                sloth.setUniqueUsages(p.getValue());
+//                sloth.setScores(impactHandler.getMaxUsageTotal(), numFilesInSystem);
+////                impactHandler.calcExtDepsLevels(sloth);
+//                impactHandler.getDepth(sloth, new ArrayList<>());
+//            });
+
+            Iterator<Sloth> itr = fileData.allSloths.values().iterator();
+            for (Sloth sloth : fileData.allSloths.values()) {
+
+//                Sloth sloth = itr.next();
+//
                 Pair<Integer, Integer> p = impactHandler.calCascadingExtDeps(sloth);
-                sloth.setTotalUsages(p.getKey());
-                sloth.setUniqueUsages(p.getValue());
-                sloth.setScores(maxUsedFileTotal);
-// TODO                sloth.setCascadeLevels(impactHandler.calcExtDepsLevels(sloth));
-            });
+                if (p.getValue() < 200) {
+                    sloth.setTotalUsages(p.getKey());
+                    sloth.setUniqueUsages(p.getValue());
+                    sloth.setScores(impactHandler.getMaxUsageTotal(), numFilesInSystem);
+                    // impactHandler.calcExtDepsLevels(sloth);
+                    impactHandler.getDepth(sloth, new ArrayList<>());
+                }
+            }
+            impactHandler.findMaxUsedFileTotal();
 
+            ;
 
 
             OutputInterpreter out = new OutputInterpreter(fileData);
@@ -65,8 +90,8 @@ public class Main extends Application implements EventHandler<ActionEvent> {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-        int height = 500;
-        int width = 500;
+        int height = 1000;
+        int width = 1000;
 
         GraphicVisualizer gv = new GraphicVisualizer(height, width);
         gv.drawingSettings();
@@ -80,16 +105,12 @@ public class Main extends Application implements EventHandler<ActionEvent> {
         {
             layout.getChildren().add(circle);
 
-//            double dx = Math.random()*(height-circle.getRadius());
-//            double dy = Math.random()*(width-circle.getRadius());
-//            gv.gc.strokeOval(circle.getCenterX()+dx,
-//                    circle.getCenterY()+dy,
-//                    circle.getRadius(),
-//                    circle.getRadius());
-//            gv.gc.fillText(sloth.getFileName(),
-//                    circle.getCenterX()+dx,
-//                    circle.getCenterY()+dy,
-//                    15);
+            double dx = Math.random()*(height-circle.getRadius());
+            double dy = Math.random()*(width-circle.getRadius());
+            gv.gc.strokeOval(circle.getCenterX()+dx,
+                    circle.getCenterY()+dy,
+                    circle.getRadius(),
+                    circle.getRadius());
         });
 
         gv.root.getChildren().addAll(gv.canvas, layout);

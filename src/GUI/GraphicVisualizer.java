@@ -6,6 +6,7 @@ import javafx.scene.Group;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.paint.Paint;
 import javafx.scene.shape.Circle;
 
 import java.util.HashMap;
@@ -46,9 +47,9 @@ public class GraphicVisualizer {
 
         slothMap.forEach((fileName, sloth) -> {
             //create circle
-            Circle circle = new Circle(sloth.totalUsages);
+            Circle circle = new Circle(sloth.uniqueUsages);
             circle.addEventFilter(MouseEvent.MOUSE_CLICKED, onMouseClickedEventHandler);
-            circle.relocate(sloth.impactScore, sloth.impactScore); //TODO put in proper coordinates; impactProbability and cascadeLevels?
+            circle.relocate(sloth.impactScore, sloth.impactScore); //TODO put in proper coordinates; impactProbability and cascadeLevel?
             circle2SlothMap.put(circle, sloth);
         });
 

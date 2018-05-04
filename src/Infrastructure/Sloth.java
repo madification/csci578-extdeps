@@ -14,12 +14,15 @@ public class Sloth {
     // level of potential impact change to this file could have
     public int impactScore = 0;
     private int spaghettiScore = 0;
+    public int usageRatio = 0;
     public int uniqueUsages = 0;
-    public int cascadeLevels = 0;
+    public int cascadeLevel = 0;
+    private boolean uniqueSet = false;
+    private boolean totalSet = false;
     public boolean impactCalculated = false;
-    public boolean levelsCalculated = false;
-    //number of external dependencies
+    public boolean levelCalculated = false;
     public int totalUsages = 0;
+    public int immediateUsages = 0;
 
     /**
      * Constructor
@@ -34,10 +37,12 @@ public class Sloth {
 
     public void setUniqueUsages(int uniqueUsages) {
         this.uniqueUsages = uniqueUsages;
+        uniqueSet = true;
     }
 
     public void setTotalUsages(int totalUsages) {
         this.totalUsages = totalUsages;
+        totalSet = true;
     }
 
 
@@ -61,39 +66,46 @@ public class Sloth {
 
     public void setExtDepsList(ArrayList<String> extDepsList) {
         this.extDepsList = extDepsList;
-        this.calculateUsageScore();
+        this.setImmediateUsages();
     }
 
-    private void calculateUsageScore(){
-        this.totalUsages = extDepsList.size();
+    private void setImmediateUsages() {
+        this.immediateUsages = this.extDepsList.size();
     }
+
+    public void setScores(int maxUsagesInSystem, int numFilesInSystem) {
+        if(dataAcquired()) {
+            // ratio of number of usages of "this" vs the most used file in the system
+            this.usageRatio = maxUsagesInSystem == 0 ? 0 : 100 * (this.totalUsages / maxUsagesInSystem);
+            this.spaghettiScore = this.totalUsages == 0 ? 0 : this.uniqueUsages / this.totalUsages;
+            // score percentage of unique files in the system which use "this"
+            this.impactScore = this.uniqueUsages / numFilesInSystem;
+
+            // We've now calculated the impact
+            this.impactCalculated = true;
+        }
+    }
+
+
+    public void setCascadeLevel(int level){
+        this.cascadeLevel = level;
+        this.levelCalculated = true;
+    }
+
+    private boolean dataAcquired(){
+        if(totalSet && uniqueSet) return true;
+
+        return false;
+    }
+
+    public boolean areLevelsCalculated() {return this.levelCalculated;}
 
     public boolean isImpactCalculated() {
-        if(levelsCalculated && impactCalculated){
+        if(levelCalculated && impactCalculated){
             return true;
         }
         else return false;
     }
-
-    public void setScores(int maxUsagesInSystem) {
-        // score = percentage of files in the whole system which use "this"
-        this.impactScore = maxUsagesInSystem == 0 ? 0 : 100*(this.totalUsages/maxUsagesInSystem);
-        this.spaghettiScore = this.totalUsages == 0 ? 0 : uniqueUsages/totalUsages;
-        impactIsCalculated();
-    }
-
-
-    public void setCascadeLevels(int levels){
-        this.cascadeLevels = levels;
-        levelsAreCalculated();
-    }
-
-    private void levelsAreCalculated() {this.levelsCalculated = true;}
-
-    private void impactIsCalculated(){
-        this.impactCalculated = true;
-    }
-
     public String getFileName() {
         return fileName;
     }

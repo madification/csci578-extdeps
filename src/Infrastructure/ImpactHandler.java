@@ -7,27 +7,38 @@ import java.util.*;
 
 public class ImpactHandler {
     InputInfo inputInfo = new InputInfo();
+    int maxUsageTotal = 0;
 
     public ImpactHandler(InputInfo inputInfo) {
         this.inputInfo = inputInfo;
     }
 
-    public int findMaxUsedFileTotal(){
-        int max = 0;
+    public void findMaxUsedFileTotal() {
 
         inputInfo.allSloths.forEach((fileName, sloth) -> {
-            if(sloth.totalUsages > max){
-                max = sloth.totalUsages;
+            if (sloth.totalUsages > this.maxUsageTotal) {
+                this.maxUsageTotal = sloth.totalUsages;
             }
 
         });
+    }
 
-        return max;
+    public int findDeepestLevel(ArrayList<Pair<String, Integer>> list) {
+        Set<Integer> levelNums = new HashSet<>();
+        list.forEach(p -> levelNums.add(p.getValue()));
+
+        if(levelNums.isEmpty()) return 0;
+        return levelNums.stream().max(Comparator.comparingInt(Integer::intValue)).get();
+    }
+
+    public int getMaxUsageTotal() {
+        return maxUsageTotal;
     }
 
     /**
      * Calculate the total number of usages as cascaded through system
      * Example:  a is used by b and c and b is used by d and c is used by e, f, g means a has 6 total cascadingExtDeps
+     *
      * @param ogSloth sloth to calculate cascadingExtDeps on
      * @return total cascadingExtDeps
      */
@@ -45,7 +56,7 @@ public class ImpactHandler {
         ogSloth.extDepsList.forEach(xDfile -> xDSlothList.add(inputInfo.allSloths.get(xDfile)));
 //        ogSloth.extDepsList.forEach(xDfile -> slothQueue.add(inputInfo.allSloths.get(xDfile)));
 
-        while(!xDSlothList.isEmpty()){
+        while (!xDSlothList.isEmpty()) {
             //pull the first sloth off the queue
             Sloth sloth = xDSlothList.remove(0);
             // add it's usage score
@@ -56,7 +67,7 @@ public class ImpactHandler {
             // for each of it's external dependencies, check if we've discovered them already
             // else add to our queue to explore
             sloth.extDepsList.forEach(s -> {
-                if(!discovered.contains(s)){
+                if (!discovered.contains(s)) {
                     xDSlothList.add(inputInfo.allSloths.get(s));
                 }
             });
@@ -91,53 +102,98 @@ public class ImpactHandler {
     /**
      * Calculate the levels of cascading extDeps
      * Example:  a is used by b and c and b is used by d and c is used by e, f, g means a has 2 levels of extDepsLevels
+     *
      * @param ogSloth
      * @return
      */
-    public int calcExtDepsLevels (Sloth ogSloth){
-        int levels = 0;
-        ArrayList<String> levelNames = new ArrayList<>();
-        levelNames.addAll(ogSloth.extDepsList);
+    public int getDepth(Sloth ogSloth, ArrayList<Sloth> discovered){
+        int depth = 0;
+        if(ogSloth.extDepsList.isEmpty()) return 1;
 
-        int deepestLevel = 0;
-        int currLevel = 0;
-        while (!levelNames.isEmpty()){
-            //TODO can I use DFS for this? Just the max search through all the nodes...
+        if(discovered.contains(ogSloth)) return 0;
 
-            for(int i = 0; i < levelNames.size(); i++) {
-//                if(deepestLevel < currLevel){
-//                    deepestLevel = currLevel; //TODO this isn't going to work because Java is by reference not value.
+        for(String child : ogSloth.extDepsList){
+            ArrayList<Sloth> updatedDiscovered = new ArrayList<>(discovered);
+            updatedDiscovered.add(ogSloth);
+            depth = Math.max(depth, getDepth(inputInfo.allSloths.get(child), updatedDiscovered));
+        }
+
+        System.out.println(depth + " : " + ogSloth.getFileName());
+
+        return depth+1;
+    }
+
+
+    public void calcExtDepsLevels(Sloth ogSloth) {
+        int maxLevel = 0;
+        // create a list that has the filename and level
+        ArrayList<Pair<String, Integer>> levelNames = new ArrayList<>();
+        // keep track of those we've discovered
+        Set<Pair<String, Integer>> discovered = new HashSet<>();
+        ArrayList<Pair<String, Integer>> all = new ArrayList<>();
+        // put all the extDeps of og sloth, which area all at level 1
+        ogSloth.extDepsList.forEach(n -> levelNames.add(new Pair<>(n, 1)));
+
+        while (!levelNames.isEmpty()) {
+            //pull the first sloth off the queue
+            Pair<String, Integer> pair = levelNames.remove(0);
+
+            // add it to our list of discovered sloths so we don't loop
+//            discovered.add(pair);
+            all.add(pair);
+
+            // for each of it's external dependencies, check if we've discovered them already
+            // else add to our queue to explore
+            inputInfo.allSloths.get(pair.getKey()).extDepsList.forEach(s -> {
+//                if(!discovered.contains(s)){
+                int newLevel = pair.getValue() + 1;
+                levelNames.add(new Pair<>(s, newLevel));
+
 //                }
-                Sloth nextSloth = inputInfo.allSloths.get(levelNames.get(i));
-                if (!nextSloth.extDepsList.isEmpty()) {
-                    deepestLevel++;
-                    // TODO the problem with this is that you could go down a shorter branch. The next sloth in this level of the list could go further back
-//                    levelNames.removeAll(levelNames);
-                    levelNames.remove(i);
-                    levelNames.addAll(nextSloth.extDepsList);
-                    break;
-                }
-            }
-            levels += deepestLevel;
+//                else System.out.println("Circular dependency discovered.");
+            });
 
+            //loop until we pop the last sloth off the queue
         }
-
-        return levels;
+        maxLevel = findDeepestLevel(all);
+        ogSloth.setCascadeLevel(maxLevel);
     }
 
 
-    public int getLevelCount(Sloth sloth){
-        int numLevels = 0;
-
-        while(!sloth.extDepsList.isEmpty()){
-            numLevels++;
-//            sloth = sloth.extDepsList.
-
-        }
-
-
-        return numLevels;
-
-    }
+//        int deepestLevel = 0;
+//        int currLevel = 0;
+//        while (!levelNames.isEmpty()){
+//            //TODO can I use DFS for this? Just the max search through all the nodes...
+//
+//            for(int i = 0; i < levelNames.size(); i++) {
+////                if(deepestLevel < currLevel){
+////                    deepestLevel = currLevel; //TODO this isn't going to work because Java is by reference not value.
+////                }
+//                Sloth nextSloth = inputInfo.allSloths.get(levelNames.get(i));
+//                if (!nextSloth.extDepsList.isEmpty()) {
+//                    deepestLevel++;
+//                    // TODO the problem with this is that you could go down a shorter branch. The next sloth in this level of the list could go further back
+////                    levelNames.removeAll(levelNames);
+//                    levelNames.remove(i);
+//                    levelNames.addAll(nextSloth.extDepsList);
+//                    break;
+//                }
+//            }
+//            levels += deepestLevel;
+//
+//        }
+//
+//        return levels;
+//    }
+//
+//
+//    public int getLevelCount(Sloth sloth){
+//        int numLevels = 0;
+//
+//        while(!sloth.extDepsList.isEmpty()){
+//            numLevels++;
+//        }
+//        return numLevels;
+//    }
 
 }
