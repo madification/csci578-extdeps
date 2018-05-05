@@ -1,18 +1,25 @@
 package GUI;
 
 import Infrastructure.Sloth;
+import javafx.collections.FXCollections;
 import javafx.event.EventHandler;
 import javafx.scene.Group;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.chart.BubbleChart;
+import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
+import javafx.scene.control.ListView;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 import javafx.scene.shape.Circle;
 import javafx.util.Pair;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 public class GraphicVisualizer {
 
@@ -91,12 +98,10 @@ public class GraphicVisualizer {
                 return;
 
             System.out.println("clicked");
-
         }
-
     };
 
-    private Pair<Float, Float> getScaleFactor(HashMap<String, Sloth> slothMap) {
+    public static Pair<Float, Float> getScaleFactor(HashMap<String, Sloth> slothMap) {
         float xscale;
         float yscale;
 
@@ -109,8 +114,8 @@ public class GraphicVisualizer {
             if (ymax < sloth.spaghettiScore) ymax = sloth.spaghettiScore;
         }
 
-        xscale = this.canvasWidth / xmax;
-        yscale = this.canvasHeight / ymax;
+        xscale = 200 / xmax;
+        yscale = 200 / ymax;
 
         // use these returned numbers to scale (multiply)  the xpos and ypos variables
         return new Pair<>(xscale, yscale);
@@ -118,35 +123,24 @@ public class GraphicVisualizer {
     }
 
 
-    public XYChart.Series getDataToPlot(HashMap<String, Sloth> slothMap) {
-        XYChart.Series toPlot = new XYChart.Series();
+    public Pair<XYChart.Series<Number, Number>, XYChart.Series<Number, Number>> getDataToPlot(HashMap<String, Sloth> slothMap, String changed) {
+        XYChart.Series<Number, Number> unchangedData = new XYChart.Series<>();
+        unchangedData.setName("Unchanged files");
+        XYChart.Series<Number, Number> changedData = new XYChart.Series<>();
+        changedData.setName("Changed files");
 
-        // xscaleFactor, yscaleFactor
-        Pair<Float, Float> p = getScaleFactor(slothMap);
-        float xscale = p.getKey();
-        float yscale = p.getValue();
+        slothMap.forEach((name, sloth) -> {
+            // add all the files that weren't changed
+            if (!sloth.fileName.equals(changed)) {
+                unchangedData.getData().add(new XYChart.Data<>(sloth.xpos, sloth.ypos, sloth.radius / 10));
+            }
+            else changedData.getData().add(new XYChart.Data<>(sloth.xpos, sloth.ypos, sloth.radius / 10));
 
-        for (Sloth sloth : slothMap.values()) {
-            if (sloth.immediateUsages == 0) this.stroke = Color.LIGHTBLUE;
-            else if (sloth.usageRatio > 50) this.stroke = Color.RED;
-            else this.stroke = Color.GRAY;
 
-            // this way every circle has a minimum radius of at least 5
-            int radius = Math.round(sloth.immediateUsages + 5);
-            int xpos = Math.round(xscale * sloth.impactScore); //this.canvasWidth *    - radius
-            int ypos = Math.round(yscale * sloth.spaghettiScore); //this.canvasHeight *
+        });
 
-            toPlot.getData().add(new XYChart.Data<>(xpos, ypos, radius/10));
-
-        }
-
-        toPlot.setName("Radius = number of external dependencies");
-
-        return toPlot;
+        return new Pair<>(unchangedData, changedData);
     }
-
-
-
 
 
 //TODO CLEAN UP BELOW

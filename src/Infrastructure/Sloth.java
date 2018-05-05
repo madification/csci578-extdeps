@@ -1,7 +1,11 @@
 package Infrastructure;
 
 
+import GUI.GraphicVisualizer;
+import javafx.util.Pair;
+
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Set;
 
 public class Sloth {
@@ -23,6 +27,11 @@ public class Sloth {
     private boolean totalSet = false;
     public boolean impactCalculated = false;
     public boolean levelCalculated = false;
+
+    // gui settings
+    public int radius;
+    public int xpos;
+    public int ypos;
 
     /**
      * Constructor
@@ -98,6 +107,16 @@ public class Sloth {
             this.impactCalculated = true;
         }
     }
+
+    public void prepareForPlotting(float xscale, float yscale){
+
+            // this way every circle has a minimum radius of at least 5
+            this.radius = Math.round(this.immediateUsages + 5);
+            this.xpos = Math.round(xscale * this.impactScore);
+            this.ypos = Math.round(yscale * this.spaghettiScore);
+        }
+
+
 
 
     public void setCascadeLevel(float level){

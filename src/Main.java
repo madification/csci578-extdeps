@@ -6,17 +6,16 @@ import Infrastructure.ImpactHandler;
 import Infrastructure.Sloth;
 import javafx.application.Application;
 import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.scene.chart.BubbleChart;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
+import javafx.scene.control.ListView;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
-import javafx.scene.paint.Color;
-import javafx.scene.shape.Circle;
 import javafx.stage.Stage;
 import javafx.util.Pair;
 
@@ -31,6 +30,19 @@ public class Main extends Application implements EventHandler<ActionEvent> {
     private static InputInfo fileData;
     private static int numFilesInSystem = 0;
 
+    private static int WINDOW_HEIGHT = 700;
+    private static int WINDOW_WIDTH = 1000;
+    private static int PLOT_HEIGHT = 600;
+    private static int PLOT_WIDTH = 800;
+    private static int LIST_HEIGHT = 200;
+    private static int LIST_WIDTH = 1000;
+
+    private static String lastSelected = "";
+
+
+    private static Pane chartPane = new Pane();
+    private static GraphicVisualizer gv = new GraphicVisualizer(WINDOW_HEIGHT, WINDOW_WIDTH);
+
     /**
      * @param args
      */
@@ -42,6 +54,7 @@ public class Main extends Application implements EventHandler<ActionEvent> {
             fileData.setInputFilePath(args[0]);
             numFilesInSystem = fileData.allSloths.size();
             ImpactHandler impactHandler = new ImpactHandler(fileData);
+
 
             fileData.allSloths.forEach((fileName, sloth) -> {
                 // Get totalUsages and uniqueUsages for each sloth
@@ -56,6 +69,12 @@ public class Main extends Application implements EventHandler<ActionEvent> {
             // now we have all the scores set for each sloth and know what the largest number of usages is
             // so lets calculate the impact scores for each sloth
             fileData.allSloths.forEach((fileName, sloth) -> sloth.setScores(impactHandler.getMaxUsageTotal(), numFilesInSystem));
+
+            // xscaleFactor, yscaleFactor for plotting
+            Pair<Float, Float> scaleFactor = GraphicVisualizer.getScaleFactor(fileData.allSloths);
+            fileData.allSloths.forEach((name, sloth) -> sloth.prepareForPlotting(scaleFactor.getKey(), scaleFactor.getValue()));
+
+
 
             OutputInterpreter out = new OutputInterpreter(fileData);
             out.generateTxt("output.txt"); //TODO figure out how to use the file path in inputInfo to select the location to save output
@@ -79,64 +98,125 @@ public class Main extends Application implements EventHandler<ActionEvent> {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-        int windowHeight = 700;
-        int windowWidth = 1300;
-        int plotHeight = 115;
-        int plotWidth = 110;
-
-        NumberAxis xaxis_chart = new NumberAxis(0, plotHeight, 10);
-        NumberAxis yaxis_chart = new NumberAxis(0, plotWidth,10);
-        xaxis_chart.setLabel("Percentage of files in system related to file.");
-        yaxis_chart.setLabel("Percentage of unique files in total usages.");
-
-        BubbleChart<Number, Number> bubbleChart = new BubbleChart<>(xaxis_chart, yaxis_chart);
-        XYChart.Series toPlot;
-
-        GraphicVisualizer gv = new GraphicVisualizer(plotHeight, plotWidth);
-//        gv.drawingSettings();
         primaryStage.setTitle("External Dependency Tool");
-        StackPane layout = new StackPane();
         BorderPane border = new BorderPane();
-        List<Pair<Integer, Integer>> list = new ArrayList<>();
-        ObservableList<Pair<Integer, Integer>> coordList = FXCollections.observableList(list);
-        ObservableList<Pair<Integer, Integer>> radiiList = FXCollections.observableList(list);
-
-        HashMap<Circle, Sloth> circle2SlothMap = gv.getCircles(fileData.allSloths);
+        chartPane.getChildren().clear();
+        chartPane.getChildren().addAll(getChart("xxx", fileData.allSloths));
+        border.setTop(chartPane);
 
 
-        circle2SlothMap.forEach((circle, sloth) ->
-        {
+        Pane textPane = new Pane();
+        textPane.getChildren().add(getTextToDisplay(fileData.allSloths));
+        border.setBottom(textPane);
 
 
-//            layout.getChildren().add(circle);
-
-//            double dx = Math.random()*(height-circle.getRadius());
-//            double dy = Math.random()*(width-circle.getRadius());
-//            gv.gc.strokeOval(circle.getCenterX()+dx,
-//                    circle.getCenterY()+dy,
-//                    circle.getRadius(),
-//                    circle.getRadius());
-        });
+//        StackPane layout = new StackPane();
 
 
-        gv.root.getChildren().addAll(gv.canvas, layout);
+//        bubbleChart = getChart("xxx", fileData.allSloths);
+//        bubbleChart.setPrefSize(PLOT_WIDTH, PLOT_HEIGHT);
+//        ListView<String> listView =
+//        listView.setPrefSize(LIST_WIDTH, LIST_HEIGHT);
+//
+//        chartPane.getChildren().add(bubbleChart);
 
-        toPlot = gv.getDataToPlot(fileData.allSloths);
-
-        StringBuilder toDisplay = new StringBuilder();
-        fileData.allSloths.keySet().forEach(s -> toDisplay.append(s + "\n"));
-        textArea.setText(toDisplay.toString());
 
 
-        border.setCenter(bubbleChart);
-        border.setBottom(textArea);
-        Scene scene = new Scene(border, windowWidth, windowHeight);
-        bubbleChart.getData().addAll(toPlot);
+        Scene scene = new Scene(border, WINDOW_WIDTH, WINDOW_HEIGHT);
 
 //        Scene scene = new Scene(gv.root, width, height);
 //        Scene scene = new Scene(layout, 500, 500);
         primaryStage.setScene(scene);
 
         primaryStage.show();
+    }
+
+    public ListView<String> getTextToDisplay(HashMap<String, Sloth> slothMap) {
+        List<String> slothNameList = new ArrayList<>();
+        slothNameList.addAll(slothMap.keySet());
+        ListView<String> listView = new ListView<>(FXCollections.observableList(slothNameList));
+        listView.setPrefSize(LIST_WIDTH, LIST_HEIGHT);
+        listView.setEditable(false);
+        listView.setOnMouseClicked(event -> {
+            String selected = listView.getSelectionModel().getSelectedItem();
+            System.out.println("clicked " + selected);
+
+            for (int i = 0; i < slothNameList.size(); i++)
+            {
+                if (slothNameList.get(i).equals(selected))
+                {
+                    if(lastSelected.equals(selected))
+                    {
+                        lastSelected = "";
+                        chartPane.getChildren().clear();
+                        chartPane.getChildren().add(getChart("xxx", slothMap));
+                    }
+                    else
+                    {
+                        lastSelected = selected;
+                        chartPane.getChildren().clear();
+                        chartPane.getChildren().add(getChart(selected, slothMap));
+                    }
+
+                    break;
+
+                }
+            }
+        });
+
+        return listView;
+    }
+
+
+    public BubbleChart<Number, Number> getChart(String changed, HashMap<String, Sloth> slothMap) {
+        final int xplotAxis = 115;
+        final int yplotAxis = 110;
+
+        // set up axes
+        final NumberAxis xaxis_chart = new NumberAxis(0, 220, 1000);
+        xaxis_chart.setLabel("Percentage of files in system related to file.");
+        xaxis_chart.setAutoRanging(false);
+        final NumberAxis yaxis_chart = new NumberAxis(0, 220, 100);
+        yaxis_chart.setLabel("Percentage of unique files in total usages.");
+        yaxis_chart.setAutoRanging(false);
+
+
+        // create bubble chart
+        final BubbleChart<Number, Number> chart = new BubbleChart<>(xaxis_chart, yaxis_chart);
+        chart.setTitle("Potential Impact on System of Change to Each File");
+        chart.setPrefSize(PLOT_WIDTH, PLOT_HEIGHT);
+        // extract the data to add to the bubble chart
+
+
+        if (!changed.equals("xxx")) {
+            // changed is the index of the file that was changed
+
+            // get a series of unchanged data then changed data
+            Pair<XYChart.Series<Number, Number>, XYChart.Series<Number, Number>> toPlot = gv.getDataToPlot(slothMap, changed);
+
+            // pull out the unchanged/nonselected files
+            XYChart.Series<Number, Number> nonselectedFiles = toPlot.getKey();
+            nonselectedFiles.setName("Unchanged Files");
+
+            // place all the files which weren't changed as one series
+//            chart.getData().add(nonselectedFiles);
+
+            // pull out the changed/selected files
+            XYChart.Series<Number, Number> selectedFiles = toPlot.getValue();
+            selectedFiles.setName("Changed File");
+
+
+            // place changed/selected file(s) as second series
+            chart.getData().add(selectedFiles);
+//            chart.getData().addAll(nonselectedFiles, selectedFiles);
+        }
+        else{
+            Pair<XYChart.Series<Number, Number>, XYChart.Series<Number, Number>> toPlot = gv.getDataToPlot(slothMap, null);
+            XYChart.Series<Number, Number> series = new XYChart.Series<>();
+            series.setName("Radius = % usage in system");
+            chart.getData().add(series);
+        }
+
+        return chart;
     }
 }
