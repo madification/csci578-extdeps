@@ -71,11 +71,11 @@ public class Sloth {
         if (intDepsSet != null && !intDepsSet.isEmpty()){
             intDList.addAll(intDepsSet);
         }
-        else System.out.println(fileName + " does not use any other files");
+//        else System.out.println(fileName + " does not use any other files");
         if (extDepsSet != null && !extDepsSet.isEmpty()){
             extDList.addAll(extDepsSet);
         }
-        else System.out.println(fileName + " is not used by any other file.");
+//        else System.out.println(fileName + " is not used by any other file.");
 
         Sloth newSloth = new Sloth(fileName, intDList);
         newSloth.setExtDepsList(extDList);
@@ -115,7 +115,7 @@ public class Sloth {
     public void prepareForPlotting(float xscale, float yscale){
 
             // this way every circle has a minimum radius of at least 5
-            this.radius = Math.round(this.immediateUsages + 20);
+            this.radius = (int)this.immediateUsages + 20;
             this.xpos = Math.round(xscale * this.impactScore);
             this.ypos = Math.round(yscale * this.spaghettiScore);
         }

@@ -9,8 +9,19 @@ public class ImpactHandler {
     private InputInfo inputInfo = new InputInfo();
     private float maxUsageTotal = 0;
 
+    private ArrayList<Sloth> impactList = new ArrayList<>();
+    private ArrayList<Sloth> immediateUsageList = new ArrayList<>();
+
     public ImpactHandler(InputInfo inputInfo) {
         this.inputInfo = inputInfo;
+    }
+
+    public ArrayList<Sloth> getImpactList() {
+        return impactList;
+    }
+
+    public ArrayList<Sloth> getImmediateUsageList() {
+        return immediateUsageList;
     }
 
     public void findMaxUsedFileTotal() {
@@ -70,5 +81,16 @@ public class ImpactHandler {
         //when we've explored all the sloths that cascading-ly use our og sloth, we will exit the while loop
         // return totalUsages and unique usages for this sloth
         return new Pair<>(total, (float) discovered.size());
+    }
+
+
+    public void getSortedScoreLists(){
+
+        this.immediateUsageList.addAll(inputInfo.allSloths.values());
+        this.immediateUsageList.sort(Comparator.comparing(sloth -> sloth.immediateUsages));
+
+        this.impactList.addAll(inputInfo.allSloths.values());
+        this.impactList.sort(Comparator.comparing(sloth -> sloth.impactScore));
+
     }
 }

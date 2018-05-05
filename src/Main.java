@@ -49,12 +49,13 @@ public class Main extends Application implements EventHandler<ActionEvent> {
         // inputfile must be passed in as first argument
         String inputFile = args[0];
         try {
+            // read the input file and extract "sloth" objects which represent individual files
             fileData = InputInterpreter.readInput(inputFile);
             fileData.setInputFilePath(args[0]);
             numFilesInSystem = fileData.allSloths.size();
             ImpactHandler impactHandler = new ImpactHandler(fileData);
 
-
+            // extract desired information for each sloth concerning usages
             fileData.allSloths.forEach((fileName, sloth) -> {
                 // Get totalUsages and uniqueUsages for each sloth
                 Pair<Float, Float> p = impactHandler.calCascadingExtDeps(sloth);
@@ -73,19 +74,18 @@ public class Main extends Application implements EventHandler<ActionEvent> {
             Pair<Float, Float> scaleFactor = GraphicVisualizer.getScaleFactor(fileData.allSloths);
             fileData.allSloths.forEach((name, sloth) -> sloth.prepareForPlotting(scaleFactor.getKey(), scaleFactor.getValue()));
 
-
-
+            // write our output describing file usages
             OutputInterpreter out = new OutputInterpreter(fileData);
             out.generateUsageText(inputFile);
+            // write output of files sorted by scores
+            impactHandler.getSortedScoreLists();
+            out.generateSortedListsText(inputFile, impactHandler.getImmediateUsageList(), impactHandler.getImpactList());
 
         } catch (IOException e) {
             System.out.println(e.getMessage());
-
         }
 
         launch(new String[]{});
-
-
     }
 
     @Override
