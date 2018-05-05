@@ -114,8 +114,8 @@ public class GraphicVisualizer {
             if (ymax < sloth.spaghettiScore) ymax = sloth.spaghettiScore;
         }
 
-        xscale = 200 / xmax;
-        yscale = 200 / ymax;
+        xscale = 100 / xmax;
+        yscale = 100 / ymax;
 
         // use these returned numbers to scale (multiply)  the xpos and ypos variables
         return new Pair<>(xscale, yscale);
@@ -132,9 +132,9 @@ public class GraphicVisualizer {
         slothMap.forEach((name, sloth) -> {
             // add all the files that weren't changed
             if (!sloth.fileName.equals(changed)) {
-                unchangedData.getData().add(new XYChart.Data<>(sloth.xpos, sloth.ypos, sloth.radius / 10));
+                unchangedData.getData().add(new XYChart.Data<>(sloth.xpos, sloth.ypos, sloth.radius /10));
             }
-            else changedData.getData().add(new XYChart.Data<>(sloth.xpos, sloth.ypos, sloth.radius / 10));
+            else changedData.getData().add(new XYChart.Data<>(sloth.xpos, sloth.ypos, sloth.radius /10));
 
 
         });

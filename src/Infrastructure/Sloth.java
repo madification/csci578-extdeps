@@ -111,7 +111,7 @@ public class Sloth {
     public void prepareForPlotting(float xscale, float yscale){
 
             // this way every circle has a minimum radius of at least 5
-            this.radius = Math.round(this.immediateUsages + 5);
+            this.radius = Math.round(this.immediateUsages + 20);
             this.xpos = Math.round(xscale * this.impactScore);
             this.ypos = Math.round(yscale * this.spaghettiScore);
         }

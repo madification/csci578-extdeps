@@ -15,7 +15,6 @@ import javafx.scene.chart.XYChart;
 import javafx.scene.control.ListView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
-import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 import javafx.util.Pair;
 
@@ -30,17 +29,17 @@ public class Main extends Application implements EventHandler<ActionEvent> {
     private static InputInfo fileData;
     private static int numFilesInSystem = 0;
 
-    private static int WINDOW_HEIGHT = 700;
+    private static int WINDOW_HEIGHT = 730;
     private static int WINDOW_WIDTH = 1000;
-    private static int PLOT_HEIGHT = 600;
-    private static int PLOT_WIDTH = 800;
-    private static int LIST_HEIGHT = 200;
+    private static int PLOT_HEIGHT = 615;
+    private static int PLOT_WIDTH = 1000;
+    private static int LIST_HEIGHT = 115;
     private static int LIST_WIDTH = 1000;
-
+    private static String TITLE = "Potential Impact on System of Change to Each File";
     private static String lastSelected = "";
 
 
-    private static Pane chartPane = new Pane();
+    private static Pane chartPane;
     private static GraphicVisualizer gv = new GraphicVisualizer(WINDOW_HEIGHT, WINDOW_WIDTH);
 
     /**
@@ -100,8 +99,9 @@ public class Main extends Application implements EventHandler<ActionEvent> {
     public void start(Stage primaryStage) throws Exception {
         primaryStage.setTitle("External Dependency Tool");
         BorderPane border = new BorderPane();
+        chartPane = new Pane();
         chartPane.getChildren().clear();
-        chartPane.getChildren().addAll(getChart("xxx", fileData.allSloths));
+        chartPane.getChildren().addAll(getChart("xxx"));
         border.setTop(chartPane);
 
 
@@ -149,13 +149,13 @@ public class Main extends Application implements EventHandler<ActionEvent> {
                     {
                         lastSelected = "";
                         chartPane.getChildren().clear();
-                        chartPane.getChildren().add(getChart("xxx", slothMap));
+                        chartPane.getChildren().add(getChart("xxx"));
                     }
                     else
                     {
                         lastSelected = selected;
                         chartPane.getChildren().clear();
-                        chartPane.getChildren().add(getChart(selected, slothMap));
+                        chartPane.getChildren().add(getChart(selected));
                     }
 
                     break;
@@ -168,22 +168,22 @@ public class Main extends Application implements EventHandler<ActionEvent> {
     }
 
 
-    public BubbleChart<Number, Number> getChart(String changed, HashMap<String, Sloth> slothMap) {
+    public BubbleChart<Number, Number> getChart(String changed) {
         final int xplotAxis = 115;
         final int yplotAxis = 110;
 
         // set up axes
-        final NumberAxis xaxis_chart = new NumberAxis(0, 220, 1000);
+        final NumberAxis xaxis_chart = new NumberAxis(0, 110, 1000);
         xaxis_chart.setLabel("Percentage of files in system related to file.");
         xaxis_chart.setAutoRanging(false);
-        final NumberAxis yaxis_chart = new NumberAxis(0, 220, 100);
+        final NumberAxis yaxis_chart = new NumberAxis(0, 110, 100);
         yaxis_chart.setLabel("Percentage of unique files in total usages.");
         yaxis_chart.setAutoRanging(false);
 
 
         // create bubble chart
         final BubbleChart<Number, Number> chart = new BubbleChart<>(xaxis_chart, yaxis_chart);
-        chart.setTitle("Potential Impact on System of Change to Each File");
+        chart.setTitle(TITLE);
         chart.setPrefSize(PLOT_WIDTH, PLOT_HEIGHT);
         // extract the data to add to the bubble chart
 
@@ -192,18 +192,18 @@ public class Main extends Application implements EventHandler<ActionEvent> {
             // changed is the index of the file that was changed
 
             // get a series of unchanged data then changed data
-            Pair<XYChart.Series<Number, Number>, XYChart.Series<Number, Number>> toPlot = gv.getDataToPlot(slothMap, changed);
+            Pair<XYChart.Series<Number, Number>, XYChart.Series<Number, Number>> toPlot = gv.getDataToPlot(fileData.allSloths, changed);
 
             // pull out the unchanged/nonselected files
             XYChart.Series<Number, Number> nonselectedFiles = toPlot.getKey();
-            nonselectedFiles.setName("Unchanged Files");
+            nonselectedFiles.setName("Files");
 
             // place all the files which weren't changed as one series
 //            chart.getData().add(nonselectedFiles);
 
             // pull out the changed/selected files
             XYChart.Series<Number, Number> selectedFiles = toPlot.getValue();
-            selectedFiles.setName("Changed File");
+            selectedFiles.setName("Selected File");
 
 
             // place changed/selected file(s) as second series
@@ -211,8 +211,8 @@ public class Main extends Application implements EventHandler<ActionEvent> {
 //            chart.getData().addAll(nonselectedFiles, selectedFiles);
         }
         else{
-            Pair<XYChart.Series<Number, Number>, XYChart.Series<Number, Number>> toPlot = gv.getDataToPlot(slothMap, null);
-            XYChart.Series<Number, Number> series = new XYChart.Series<>();
+            Pair<XYChart.Series<Number, Number>, XYChart.Series<Number, Number>> toPlot = gv.getDataToPlot(fileData.allSloths, null);
+            XYChart.Series<Number, Number> series = toPlot.getKey();
             series.setName("Radius = % usage in system");
             chart.getData().add(series);
         }
