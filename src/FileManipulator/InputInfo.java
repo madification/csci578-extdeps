@@ -19,7 +19,7 @@ public class InputInfo {
             this.inputFilePath = inputFilePath;
         }
 
-        //TODO how do I confirm that every file is in here exactly once?
+        // get a hashmap of all sloths with the file name as key and sloth as value
         public void populateSlothList(){
             //for every file that is used by another, create a sloth and put it in a list
             this.extDepsMap.forEach((key,set) -> {
@@ -29,8 +29,7 @@ public class InputInfo {
             this.intDepsMap.forEach((key, set) -> {
                 allSloths.computeIfAbsent(key, o-> allSloths.put(key, Sloth.createSloth(key, set, extDepsMap.get(key))));
             } );
-//            allSloths.computeIfAbsent(this.intDepsMap.forEach((k, s) -> allSloths.put(k, Sloth.createSloth(k, this.intDepsMap.get(k), null))) );
-        } //TODO should add a computeIfAbsent on the intDepsList to make sure, if any files are not used by another, they still make it into this list
+        }
     }
 
 

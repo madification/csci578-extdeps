@@ -1,11 +1,6 @@
 package Infrastructure;
 
-
-import GUI.GraphicVisualizer;
-import javafx.util.Pair;
-
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Set;
 
 public class Sloth {
@@ -22,7 +17,6 @@ public class Sloth {
     public float uniqueUsages = 0;
     public float totalUsages = 0;
     public float immediateUsages = 0;
-    public float cascadeLevel = 0; // no longer used
     private boolean uniqueSet = false;
     private boolean totalSet = false;
     public boolean impactCalculated = false;
@@ -43,7 +37,15 @@ public class Sloth {
         this.intDepsList = intDepsList;
     }
 
+
+    // This is a list of files which directly use the file of interest. They are immediate usages.
+    public void setExtDepsList(ArrayList<String> extDepsList) {
+        this.extDepsList = extDepsList;
+        this.setImmediateUsages();
+    }
+
     // Unique usages are cascading usages but w/o repeats. Duplicates on different branches will not come through.
+    // Example: a is used by b and c; b is used by c and d; c is used by d, e, and f, but a's unique usages = 5: b, c, d, e, f
     public void setUniqueUsages(float uniqueUsages) {
         this.uniqueUsages = uniqueUsages;
         uniqueSet = true;
@@ -55,7 +57,14 @@ public class Sloth {
         totalSet = true;
     }
 
-
+    /**
+     * Consider this a slothBuilder.
+     *
+     * @param fileName String file name
+     * @param intDepsSet Set of internal dependencies (what does the file use)
+     * @param extDepsSet Set of external dependencies (what uses the file)
+     * @return a sloth object containing all file information
+     */
     public static Sloth createSloth(String fileName, Set<String> intDepsSet, Set<String> extDepsSet){
         ArrayList<String> intDList = new ArrayList<>();
         ArrayList<String> extDList = new ArrayList<>();
@@ -73,11 +82,6 @@ public class Sloth {
         return newSloth;
     }
 
-    // This is a list of files which directly use the file of interest. They are immediate usages.
-    public void setExtDepsList(ArrayList<String> extDepsList) {
-        this.extDepsList = extDepsList;
-        this.setImmediateUsages();
-    }
 
     // Immediate usages are like immediate relatives. These files directly import the file of interest
     private void setImmediateUsages() {
@@ -117,20 +121,11 @@ public class Sloth {
         }
 
 
-
-
-    public void setCascadeLevel(float level){
-        this.cascadeLevel = level;
-        this.levelCalculated = true;
-    }
-
     private boolean dataAcquired(){
         if(totalSet && uniqueSet) return true;
 
         return false;
     }
-
-    public boolean areLevelsCalculated() {return this.levelCalculated;}
 
     public boolean isImpactCalculated() {
         if(levelCalculated && impactCalculated){

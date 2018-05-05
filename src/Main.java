@@ -76,7 +76,7 @@ public class Main extends Application implements EventHandler<ActionEvent> {
 
 
             OutputInterpreter out = new OutputInterpreter(fileData);
-            out.generateTxt("output.txt"); //TODO figure out how to use the file path in inputInfo to select the location to save output
+            out.generateUsageText(inputFile);
 
         } catch (IOException e) {
             System.out.println(e.getMessage());
