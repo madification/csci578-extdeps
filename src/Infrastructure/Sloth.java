@@ -103,7 +103,7 @@ public class Sloth {
             // Spaghetti score is the ratio of how many uniqueUsages vs totalUsages.
             // This shows "you have this many unique files, but this many total usages"
             // aka how many connections between each of the unique files thus making a giant spaghetti diagram!
-            this.spaghettiScore = this.totalUsages == 0 ? 0 : 100*(this.uniqueUsages / this.totalUsages);
+            this.spaghettiScore = this.totalUsages == 0 ? 0 : (100- (100*(this.uniqueUsages / this.totalUsages)));
             // score percentage of unique files in the system which use "this"
             this.impactScore = 100 * (this.uniqueUsages / numFilesInSystem);
 

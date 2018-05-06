@@ -77,23 +77,6 @@ public class OutputInterpreter {
         }
     }
 
-//
-//    public void generateNoUsageText() {
-//
-//        inputInfo.allSloths.forEach((name, sloth) -> {
-//
-//
-//            if ( !=null && !intDepsSet.isEmpty()){
-//                intDList.addAll(intDepsSet);
-//            }
-//        else System.out.println(fileName + " does not use any other files");
-//            if (extDepsSet != null && !extDepsSet.isEmpty()) {
-//                extDList.addAll(extDepsSet);
-//            }
-//            else System.out.println(fileName + " is not used by any other file.");
-//        });
-//    }
-
 
     public void generateSortedListsText(String fileName, ArrayList<Sloth> immediateUsageList, ArrayList<Sloth> impactScoreList) {
         // edit file name for output

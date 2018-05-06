@@ -93,4 +93,6 @@ public class ImpactHandler {
         this.impactList.sort(Comparator.comparing(sloth -> sloth.impactScore));
 
     }
+
+
 }

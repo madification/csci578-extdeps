@@ -12,7 +12,9 @@ import javafx.scene.Scene;
 import javafx.scene.chart.BubbleChart;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
+import javafx.scene.control.Button;
 import javafx.scene.control.ListView;
+import javafx.scene.control.TextArea;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
@@ -20,7 +22,6 @@ import javafx.util.Pair;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 
@@ -102,71 +103,20 @@ public class Main extends Application implements EventHandler<ActionEvent> {
         chartPane = new Pane();
         chartPane.getChildren().clear();
         chartPane.getChildren().addAll(getChart("xxx"));
-        border.setTop(chartPane);
+        border.setCenter(chartPane);
 
 
         Pane textPane = new Pane();
-        textPane.getChildren().add(getTextToDisplay(fileData.allSloths));
+        textPane.getChildren().add(getTextToDisplay());
         border.setBottom(textPane);
-
-
-//        StackPane layout = new StackPane();
-
-
-//        bubbleChart = getChart("xxx", fileData.allSloths);
-//        bubbleChart.setPrefSize(PLOT_WIDTH, PLOT_HEIGHT);
-//        ListView<String> listView =
-//        listView.setPrefSize(LIST_WIDTH, LIST_HEIGHT);
-//
-//        chartPane.getChildren().add(bubbleChart);
-
 
 
         Scene scene = new Scene(border, WINDOW_WIDTH, WINDOW_HEIGHT);
 
-//        Scene scene = new Scene(gv.root, width, height);
-//        Scene scene = new Scene(layout, 500, 500);
         primaryStage.setScene(scene);
 
         primaryStage.show();
     }
-
-    public ListView<String> getTextToDisplay(HashMap<String, Sloth> slothMap) {
-        List<String> slothNameList = new ArrayList<>();
-        slothNameList.addAll(slothMap.keySet());
-        ListView<String> listView = new ListView<>(FXCollections.observableList(slothNameList));
-        listView.setPrefSize(LIST_WIDTH, LIST_HEIGHT);
-        listView.setEditable(false);
-        listView.setOnMouseClicked(event -> {
-            String selected = listView.getSelectionModel().getSelectedItem();
-            System.out.println("clicked " + selected);
-
-            for (int i = 0; i < slothNameList.size(); i++)
-            {
-                if (slothNameList.get(i).equals(selected))
-                {
-                    if(lastSelected.equals(selected))
-                    {
-                        lastSelected = "";
-                        chartPane.getChildren().clear();
-                        chartPane.getChildren().add(getChart("xxx"));
-                    }
-                    else
-                    {
-                        lastSelected = selected;
-                        chartPane.getChildren().clear();
-                        chartPane.getChildren().add(getChart(selected));
-                    }
-
-                    break;
-
-                }
-            }
-        });
-
-        return listView;
-    }
-
 
     public BubbleChart<Number, Number> getChart(String changed) {
         final int xplotAxis = 115;
@@ -203,7 +153,7 @@ public class Main extends Application implements EventHandler<ActionEvent> {
 
             // pull out the changed/selected files
             XYChart.Series<Number, Number> selectedFiles = toPlot.getValue();
-            selectedFiles.setName("Selected File");
+            selectedFiles.setName(changed);
 
 
             // place changed/selected file(s) as second series
@@ -213,10 +163,125 @@ public class Main extends Application implements EventHandler<ActionEvent> {
         else{
             Pair<XYChart.Series<Number, Number>, XYChart.Series<Number, Number>> toPlot = gv.getDataToPlot(fileData.allSloths, null);
             XYChart.Series<Number, Number> series = toPlot.getKey();
-            series.setName("Radius = % usage in system");
+            series.setName("Radius = # direct usages in system");
             chart.getData().add(series);
         }
 
         return chart;
     }
+
+    public ListView<String> getTextToDisplay() {
+        List<String> slothNameList = new ArrayList<>();
+        slothNameList.addAll(fileData.allSloths.keySet());
+        ListView<String> listView = new ListView<>(FXCollections.observableList(slothNameList));
+        listView.setPrefSize(LIST_WIDTH, LIST_HEIGHT);
+        listView.setEditable(false);
+
+        // event handler for click in ListView
+        listView.setOnMouseClicked(event -> {
+            String selected = listView.getSelectionModel().getSelectedItem();
+            System.out.println("clicked " + selected);
+
+            for (int i = 0; i < slothNameList.size(); i++)
+            {
+                if (slothNameList.get(i).equals(selected))
+                {
+                    if(lastSelected.equals(selected))
+                    {
+                        lastSelected = "";
+                        chartPane.getChildren().clear();
+                        chartPane.getChildren().add(getChart("xxx"));
+                    }
+                    else
+                    {
+                        lastSelected = selected;
+                        chartPane.getChildren().clear();
+                        chartPane.getChildren().addAll(getChart(selected), getDisplayButton(selected));
+                    }
+
+                    break;
+
+                }
+            }
+        });
+
+        return listView;
+    }
+
+    /**
+     * This method returns the displayButton which removes the chart and adds the text area of file details
+     * It adds the return button in addition to the list view.
+     * @param fileName file selected from list view event handler
+     * @return displayButton
+     */
+    public Button getDisplayButton(String fileName) {
+        Button displayBtn = new Button("Show Details");
+        displayBtn.relocate(10, 575);
+
+        displayBtn.setOnMouseClicked(event -> {
+            chartPane.getChildren().clear();
+            chartPane.getChildren().addAll(getReturnButton(), getFileDetails(fileName));
+
+        });
+
+        return displayBtn;
+    }
+
+    public Button getReturnButton(){
+        Button returnButton = new Button("Show Graph");
+        returnButton.relocate(10, 575);
+
+        returnButton.setOnMouseClicked(event -> {
+            chartPane.getChildren().clear();
+            chartPane.getChildren().addAll(getChart("xxx"));
+        });
+        return returnButton;
+    }
+
+
+
+    // this will be called by the event handler for the button click
+    public TextArea getFileDetails(String fileName){
+        TextArea textArea = new TextArea();
+        textArea.setEditable(false);
+        textArea.setPrefSize(PLOT_WIDTH, PLOT_HEIGHT-100);
+
+
+        Sloth sloth = fileData.allSloths.get(fileName);
+        textArea.setText("Showing details for:    " + fileName + "\n" + "\n");
+        // immediate usages
+        textArea.appendText("Number of Direct External Dependencies: " + "\n" + "       " + sloth.immediateUsages + "\n");
+        textArea.appendText("This is the number of direct references to this file by other files or, in other words, " +
+                "the number of files in the system which depend on this file." + "\n");
+        textArea.appendText("Think of this as the children of the file node." + "\n" + "\n");
+        // unique usages
+        textArea.appendText("Number of Unique Cascading External Dependencies: " + "\n" + "       " + sloth.uniqueUsages + "\n");
+        textArea.appendText("This is the number of unique files which reference this file both directly and indirectly." + "\n");
+        textArea.appendText("Think of this as the number of unique nodes in the file's tree." + "\n" + "\n");
+        // total usages
+        textArea.appendText("Total Number of Cascading External Dependencies: " + "\n" + "       " + sloth.totalUsages + "\n");
+        textArea.appendText("This is the total number of files which reference this file directly or indirectly." + "\n");
+        textArea.appendText("Think of this as the total number of nodes in the file's tree or as the number of nodes " +
+                "in the system's tree which can be traced back to the file node." + "\n" + "\n");
+        // spaghetti factor
+        textArea.appendText("Spaghetti Factor: " + "\n" + "       " + sloth.spaghettiScore + "\n");
+        textArea.appendText("This is the percentage of the total cascading references to this file which are unique." + "\n");
+        textArea.appendText("This shows us how interconnected the file references are. A percentage of 0 means every " +
+                "reference to this file was unique." + "\n" +
+                "A factor greater than 0 means of there are interconnected dependencies amongst the total " +
+                "references to this file. Thus creating a spaghetti like set of inter-dependencies." + "\n" + "\n");
+        // impact score
+        textArea.appendText("Impact Score: " + "\n" + "       " + sloth.impactScore+ "%" + "\n");
+        textArea.appendText("This is the percentage of unique files within the whole system which reference this file " +
+                "directly and indirectly." + "\n" + "Think of this as the percentage of unique nodes in the system's tree " +
+                "which can be traced back to the file node." +"\n" + "\n");
+        // list of external dependencies
+        textArea.appendText("\n" + "Listed below are all system files which directly reference this file" + "\n");
+        sloth.extDepsList.forEach(file ->  textArea.appendText("       " + file + "\n"));
+
+
+
+        return textArea;
+    }
+
 }
