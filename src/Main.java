@@ -22,6 +22,8 @@ import javafx.util.Pair;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 
@@ -173,14 +175,16 @@ public class Main extends Application implements EventHandler<ActionEvent> {
     public ListView<String> getTextToDisplay() {
         List<String> slothNameList = new ArrayList<>();
         slothNameList.addAll(fileData.allSloths.keySet());
+        // sort the list and add it to the list view so it will display alphabetically
+        Collections.sort(slothNameList);
         ListView<String> listView = new ListView<>(FXCollections.observableList(slothNameList));
+
         listView.setPrefSize(LIST_WIDTH, LIST_HEIGHT);
         listView.setEditable(false);
 
         // event handler for click in ListView
         listView.setOnMouseClicked(event -> {
             String selected = listView.getSelectionModel().getSelectedItem();
-            System.out.println("clicked " + selected);
 
             for (int i = 0; i < slothNameList.size(); i++)
             {
@@ -245,6 +249,7 @@ public class Main extends Application implements EventHandler<ActionEvent> {
         TextArea textArea = new TextArea();
         textArea.setEditable(false);
         textArea.setPrefSize(PLOT_WIDTH, PLOT_HEIGHT-100);
+        textArea.setScrollTop(0);
 
 
         Sloth sloth = fileData.allSloths.get(fileName);
