@@ -129,7 +129,7 @@ public class Main extends Application implements EventHandler<ActionEvent> {
         xaxis_chart.setLabel("Percentage of files in system related to file.");
         xaxis_chart.setAutoRanging(false);
         final NumberAxis yaxis_chart = new NumberAxis(0, 110, 100);
-        yaxis_chart.setLabel("Percentage of unique files in total usages.");
+        yaxis_chart.setLabel("Percentage of non-unique files in total usages.");
         yaxis_chart.setAutoRanging(false);
 
 
@@ -270,7 +270,7 @@ public class Main extends Application implements EventHandler<ActionEvent> {
                 "in the system's tree which can be traced back to the file node." + "\n" + "\n");
         // spaghetti factor
         textArea.appendText("Spaghetti Factor: " + "\n" + "       " + sloth.spaghettiScore + "\n");
-        textArea.appendText("This is the percentage of the total cascading references to this file which are unique." + "\n");
+        textArea.appendText("This is the percentage of the total cascading references to this file which are non-unique." + "\n");
         textArea.appendText("This shows us how interconnected the file references are. A percentage of 0 means every " +
                 "reference to this file was unique." + "\n" +
                 "A factor greater than 0 means of there are interconnected dependencies amongst the total " +
